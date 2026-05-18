@@ -15,6 +15,7 @@ from core.camera import StereoCameraSystem
 from core.geometry import triangulate_point
 from core.trajectory import Trajectory3D
 from core.detector import YoloDetector
+from core.geometry import triangulate_point, to_cartesian_coordinates
 from core.visualization import (
     draw_cam_axes,
     draw_world_axes_at_point,
@@ -62,6 +63,21 @@ def main():
         det1 = detector.detect(small1)
         det2 = detector.detect(small2)
 
+        if det1 is not None and det2 is not None:
+            pt1 = det1["center"]
+            pt2 = det2["center"]
+            
+            X_raw = triangulate_point(pt1, pt2, calib)
+            
+            # Преобразуем в прямоугольную систему координат
+            X = to_cartesian_coordinates(X_raw, mode="standard")
+            
+            # Отладочный вывод
+            print(f"Raw:    X={X_raw[0]:+.3f}, Y={X_raw[1]:+.3f}, Z={X_raw[2]:+.3f}")
+            print(f"Cartesian: X={X[0]:+.3f}, Y={X[1]:+.3f}, Z={X[2]:+.3f}")
+            print("-" * 50)
+    
+
         # det1 = detector.detect(frame1)
         # det2 = detector.detect(frame2)
 
@@ -89,6 +105,8 @@ def main():
             # pt2 = det2["center"]
 
             X = triangulate_point(pt1, pt2, calib)
+            # if X is not None:
+            #     print(f"3D: X={X[0]:.3f}, Y={X[1]:.3f}, Z={X[2]:.3f}")
 
             draw_world_axes_at_point(
                 vis1, calib.K1, calib.D1, calib.rvec1, calib.tvec1, X, axis_len_m=AXIS_LEN_M
@@ -142,7 +160,11 @@ def main():
                 recording = False
                 print("Запись траектории остановлена.")
                 print(f"Сохранено точек: {len(trajectory)}")
-                trajectory.save_plot(TRAJECTORY_PLOT_FILE)
+                trajectory.save_plot(
+                    TRAJECTORY_PLOT_FILE,
+                    fixed_limits=[(-2, 2), (-2, 2), (0, 3)],  # X, Y, Z в метрах
+                    equal_aspect=True  # одинаковый масштаб по всем осям
+                )
 
         elif key in (ord("c"), ord("C")):
             recording = False

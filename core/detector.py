@@ -2,7 +2,7 @@ from ultralytics import YOLO
 
 
 class YoloDetector:
-    def __init__(self, model_name="yolo11n.pt", conf=0.35, target_class_name=None):
+    def __init__(self, model_name="best.pt", conf=0.35, target_class_name=None):
         self.model = YOLO(model_name)
         self.conf = conf
         self.names = self.model.names
@@ -23,7 +23,9 @@ class YoloDetector:
         )
 
     def detect(self, frame):
-        results = self.model(frame, conf=self.conf, imgsz=416, verbose=False)
+        # Для Drone-Detection-YOLOv11x лучше использовать imgsz=640
+        # Модель обучена на этом разрешении и лучше детектит маленькие дроны
+        results = self.model(frame, conf=self.conf, imgsz=640, verbose=False)
         boxes = results[0].boxes
 
         if boxes is None or len(boxes) == 0:

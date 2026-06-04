@@ -45,6 +45,10 @@ class YoloDetector:
             cx = float((x1 + x2) / 2.0)
             cy = float((y1 + y2) / 2.0)
 
+            h, w = frame.shape[:2]
+            cx = max(0, min(cx, w - 1))
+            cy = max(0, min(cy, h - 1))
+
             if conf > best_conf:
                 best_conf = conf
                 best = {

@@ -6,30 +6,52 @@ import matplotlib.pyplot as plt
 
 
 class Trajectory3D:
-    def __init__(self, smoothing_window=5):
+    def __init__(self, smoothing_window=5,  max_jump=2.0):
         self.points = []
         self.smoothing_window = smoothing_window  # окно для медианной фильтрации
         self.buffer = []  # буфер точек
+        self.max_jump = max_jump
 
     def clear(self):
         self.points.clear()
         self.buffer.clear()
 
     def add(self, point):
-        """Добавляет точку с медианной фильтрацией"""
-        self.buffer.append(np.array(point, dtype=np.float32))
+        """
+        Добавляет точку с защитой от выбросов и медианной фильтрацией.
+        """
+
+        point = np.array(point, dtype=np.float32)
+
+        if not np.all(np.isfinite(point)):
+            return False
+
+        # Отсекаем резкие скачки
+        if len(self.points) > 0:
+            last = self.points[-1]
+            dist = np.linalg.norm(point - last)
+
+            if dist > self.max_jump:
+                print(f"Пропущен выброс траектории: jump={dist:.3f} m")
+                return False
+
+        self.buffer.append(point)
 
         if len(self.buffer) >= self.smoothing_window:
-            # Медианная фильтрация по окну
             stacked = np.stack(self.buffer)
             filtered = np.median(stacked, axis=0)
             self.points.append(filtered)
-            self.buffer.pop(0)  # удаляем самую старую точку
+            self.buffer.pop(0)
         else:
-            self.points.append(np.array(point, dtype=np.float32))
+            self.points.append(point)
+
+        return True
 
     def __len__(self):
         return len(self.points)
+
+    def get_points(self):
+        return np.array(self.points, dtype=np.float32)
 
     def save_plot(
         self,

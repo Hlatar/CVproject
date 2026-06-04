@@ -22,6 +22,16 @@ class StereoCalibration:
         self.P1 = self.K1 @ np.hstack([np.eye(3), np.zeros((3, 1))])
         self.P2 = self.K2 @ np.hstack([self.R, self.T])
 
+        self.P1_norm = np.hstack([
+            np.eye(3, dtype=np.float64),
+            np.zeros((3, 1), dtype=np.float64)
+        ])
+
+        self.P2_norm = np.hstack([
+            self.R.astype(np.float64),
+            self.T.astype(np.float64).reshape(3, 1)
+        ])
+
         self.rvec1 = np.zeros((3, 1), dtype=np.float32)
         self.tvec1 = np.zeros((3, 1), dtype=np.float32)
         self.rvec2, _ = cv.Rodrigues(self.R.astype(np.float32))

@@ -100,3 +100,127 @@ def draw_3d_text(img, X):
             (0, 255, 255),
             2
         )
+
+def draw_trajectory_panel(points, width=500, height=720, scale=80):
+    """
+    Рисует панель траектории с тремя проекциями:
+
+    1. XZ — вид сверху
+    2. XY — вид спереди
+    3. ZY — вид сбоку
+    """
+
+    panel = np.zeros((height, width, 3), dtype=np.uint8)
+
+    cv.putText(
+        panel,
+        "3D trajectory projections",
+        (20, 30),
+        cv.FONT_HERSHEY_SIMPLEX,
+        0.7,
+        (255, 255, 255),
+        2
+    )
+
+    if points is None or len(points) < 2:
+        cv.putText(
+            panel,
+            "Not enough points",
+            (20, 70),
+            cv.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, 0, 255),
+            2
+        )
+        return panel
+
+    pts = np.asarray(points, dtype=np.float32)
+
+    # Центры трёх маленьких графиков
+    centers = [
+        (width // 2, 170),  # XZ
+        (width // 2, 390),  # XY
+        (width // 2, 610),  # ZY
+    ]
+
+    titles = [
+        "Top view: X-Z",
+        "Front view: X-Y",
+        "Side view: Z-Y",
+    ]
+
+    # Какие оси брать для каждой проекции
+    projections = [
+        (0, 2),  # XZ
+        (0, 1),  # XY
+        (2, 1),  # ZY
+    ]
+
+    for idx, ((cx, cy), title, (a, b)) in enumerate(zip(centers, titles, projections)):
+        cv.putText(
+            panel,
+            title,
+            (20, cy - 90),
+            cv.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (255, 255, 255),
+            1
+        )
+
+        # Оси
+        cv.line(panel, (cx - 180, cy), (cx + 180, cy), (80, 80, 80), 1)
+        cv.line(panel, (cx, cy - 80), (cx, cy + 80), (80, 80, 80), 1)
+
+        prev = None
+
+        for p in pts:
+            u = int(cx + p[a] * scale)
+            v = int(cy - p[b] * scale)
+
+            if 0 <= u < width and 0 <= v < height:
+                if prev is not None:
+                    cv.line(panel, prev, (u, v), (0, 255, 255), 2)
+
+                prev = (u, v)
+
+        # Последняя точка
+        last = pts[-1]
+        u = int(cx + last[a] * scale)
+        v = int(cy - last[b] * scale)
+
+        if 0 <= u < width and 0 <= v < height:
+            cv.circle(panel, (u, v), 5, (0, 0, 255), -1)
+
+    last = pts[-1]
+
+    cv.putText(
+        panel,
+        f"X={last[0]:.2f} m",
+        (20, height - 70),
+        cv.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (255, 255, 255),
+        1
+    )
+
+    cv.putText(
+        panel,
+        f"Y={last[1]:.2f} m",
+        (20, height - 45),
+        cv.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (255, 255, 255),
+        1
+    )
+
+    cv.putText(
+        panel,
+        f"Z={last[2]:.2f} m",
+        (20, height - 20),
+        cv.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (255, 255, 255),
+        1
+    )
+
+    return panel

@@ -82,3 +82,28 @@ def is_valid_3d_point(X, min_z=0.05, max_z=100.0):
         return False
 
     return True
+
+# def depth_pixel_to_3d(x, y, depth, intrinsics):
+#     """Преобразует пиксель (x,y) и значение глубины (в метрах) в 3D точку в системе камеры."""
+#     fx = intrinsics.fx
+#     fy = intrinsics.fy
+#     ppx = intrinsics.ppx
+#     ppy = intrinsics.ppy
+#     X = (x - ppx) * depth / fx
+#     Y = (y - ppy) * depth / fy
+#     Z = depth
+#     return np.array([X, Y, Z], dtype=np.float32)
+
+def depth_pixel_to_3d(x, y, depth, K):
+    """
+    Преобразует пиксель (x,y) и значение глубины (в метрах) в 3D точку.
+    K - матрица интринсиков 3x3 (fx, fy, cx, cy).
+    """
+    fx = K[0, 0]
+    fy = K[1, 1]
+    cx = K[0, 2]
+    cy = K[1, 2]
+    X = (x - cx) * depth / fx
+    Y = (y - cy) * depth / fy
+    Z = depth
+    return np.array([X, Y, Z], dtype=np.float32)

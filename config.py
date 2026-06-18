@@ -13,3 +13,10 @@ YOLO_CONF = 0.25                  # порог уверенности (для д
 
 # Для Drone-Detection-YOLOv11x модель имеет только один класс: "drone" (индекс 0)
 TARGET_CLASS_NAME = "drone"       # имя класса для детекции
+
+# === НАСТРОЙКИ REALSENSE ===
+REALSENSE_USE_COLOR = True          # Использовать цветной поток для YOLO (если True) или IR (если False)
+REALSENSE_WIDTH = 1280
+REALSENSE_HEIGHT = 720
+REALSENSE_FPS = 30
+REALSENSE_USE_DEPTH = False    

@@ -36,3 +36,11 @@ class StereoCalibration:
         self.tvec1 = np.zeros((3, 1), dtype=np.float32)
         self.rvec2, _ = cv.Rodrigues(self.R.astype(np.float32))
         self.tvec2 = self.T.astype(np.float32).reshape(3, 1)
+
+        # в calibration.py добавить метод
+    def set_intrinsics(self, K1_new, K2_new):
+        self.K1 = K1_new
+        self.K2 = K2_new
+        self.P1 = self.K1 @ np.hstack([np.eye(3), np.zeros((3,1))])
+        self.P2 = self.K2 @ np.hstack([self.R, self.T])
+

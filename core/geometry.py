@@ -107,3 +107,18 @@ def depth_pixel_to_3d(x, y, depth, K):
     Y = (y - cy) * depth / fy
     Z = depth
     return np.array([X, Y, Z], dtype=np.float32)
+
+def get_depth_at_center(depth_frame, cx, cy, radius=3):
+    """Возвращает медианную глубину в квадрате radius вокруг (cx, cy)."""
+    import numpy as np
+    depth_image = np.asanyarray(depth_frame.get_data())
+    h, w = depth_image.shape
+    x1 = max(0, cx - radius)
+    x2 = min(w, cx + radius + 1)
+    y1 = max(0, cy - radius)
+    y2 = min(h, cy + radius + 1)
+    patch = depth_image[y1:y2, x1:x2]
+    valid = patch[patch > 0]
+    if len(valid) == 0:
+        return 0.0
+    return np.median(valid) / 1000.0  # в метрах

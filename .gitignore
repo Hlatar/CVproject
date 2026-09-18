@@ -29,3 +29,14 @@ Thumbs.db
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Virtual environments (extra)
+yolo_env/
+Окружение/
+
+# Local experiments / datasets
+archive/
+dron/
+
+# YOLO training outputs
+runs/

@@ -7,6 +7,7 @@
 
 A real-time computer vision system that detects drones, tracks them across frames, and reconstructs their 3D trajectory using an Intel RealSense depth camera. Built on YOLO for detection and a Kalman filter for smooth 3D state estimation.
 
+<!--
 ---
 
 ## 🎥 Demo
@@ -14,6 +15,7 @@ A real-time computer vision system that detects drones, tracks them across frame
 ![Dashboard](docs/demo.gif)
 
 *Real-time dashboard: YOLO detection, 3D coordinates, and live trajectory projections.*
+-->
 
 ---
 
@@ -66,12 +68,11 @@ A real-time computer vision system that detects drones, tracks them across frame
    matplotlib
    ultralytics
    pyrealsense2
-   huggingface_hub
    ```
 
-4. **Download model weights** (automatic on first run, or manually):
+4. **Download model weights** manually from Hugging Face and place `best.pt` in the project root:
    ```bash
-   huggingface-cli download Hlatar/CVproject-drone-weights best.pt --local-dir .
+   huggingface-cli download Hlatar/Geoscan_pioneer_base_drone_detection_finetuned best.pt --local-dir .
    ```
 
 5. **Run:**
@@ -125,9 +126,7 @@ A real-time computer vision system that detects drones, tracks them across frame
 ```
 CVproject/
 ├── core/
-│   ├── camera.py             # Stereo camera (cv.VideoCapture based)
 │   ├── camera_realsense.py   # RealSense D435i wrapper (color + depth)
-│   ├── calibration.py        # Stereo calibration loader
 │   ├── detector.py           # YOLO + CSRT/KCF tracker
 │   ├── geometry.py           # 3D math: pixel → 3D, camera → world
 │   ├── kalman3d.py           # 3D Kalman filter (cv2.KalmanFilter)
@@ -161,14 +160,6 @@ TARGET_CLASS_NAME  = "drone"
 TRAJECTORY_PLOT_FILE = "trajectory_3d.png"
 ```
 
-For stereo mode (`core/camera.py` + `core/calibration.py`), also set:
-
-```python
-CAM_ID_1   = 4
-CAM_ID_2   = 2
-CALIB_FILE = "stereo_params.npz"
-```
-
 ---
 
 ## 🤖 Model
@@ -188,9 +179,9 @@ The detector uses a fine-tuned YOLO model trained specifically for drone detecti
 | Recall | 0.929 |
 
 Weights are hosted on Hugging Face:
-👉 [`Hlatar/CVproject-drone-weights`](https://huggingface.co/Hlatar/Geoscan_pioneer_base_drone_detection_finetuned)
+👉 [`Hlatar/Geoscan_pioneer_base_drone_detection_finetuned`](https://huggingface.co/Hlatar/Geoscan_pioneer_base_drone_detection_finetuned)
 
-Downloaded automatically on first run via `huggingface_hub`.
+Download the weights manually and place `best.pt` in the project root.
 
 ---
 
@@ -203,7 +194,7 @@ The saved 3D trajectory plot (`trajectory_3d.png`) includes:
 - Optional equal aspect ratio for a cubic view
 
 Live dashboard shows:
-- FPS, active tracks, stereo pairs
+- FPS and active track status
 - Current 3D position (X, Y, Z), distance from origin
 - Averaged confidence, saved points count
 - Recording status (REC ON / OFF)
@@ -227,16 +218,15 @@ Live dashboard shows:
 - Trained only on the `drone` class.
 - Depth accuracy depends on the scene — reflective or transparent surfaces degrade Z.
 - Multi-drone scenes may cause ID switching.
-- Requires a RealSense depth camera for the main pipeline; stereo mode is available but not fully integrated into the dashboard.
+- Requires an Intel RealSense depth camera for depth-based 3D localization.
 
 ---
 
 ## 🗺️ Roadmap
 
 - [ ] Multi-object tracking with IDs
-- [ ] Full stereo mode support in the dashboard
 - [ ] Real-time 3D viewer (Open3D / pyvista)
-- [ ] Export trajectory to CSV / ROS bag
+- [ ] Export trajectory to CSV
 - [ ] Docker image for reproducible setup
 
 ---

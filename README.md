@@ -132,6 +132,7 @@ CVproject/
 │   ├── kalman3d.py           # 3D Kalman filter (cv2.KalmanFilter)
 │   ├── trajectory.py         # Trajectory buffer, smoothing, 3D plot export
 │   └── visualization.py      # Overlays, dashboard, trajectory panel
+├── best.pt                   # Model itself
 ├── config.py                 # Paths, camera IDs, model config
 ├── main.py                   # Entry point
 ├── requirements.txt

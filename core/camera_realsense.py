@@ -10,6 +10,11 @@ class RealSenseCameraSystem:
         self.pipeline.start(config)
         self.align = rs.align(rs.stream.color)
         self.color_intrinsics = None
+
+        self.spatial = rs.spatial_filter()
+        self.temporal = rs.temporal_filter()
+        self.hole_filling = rs.hole_filling_filter()
+
         for _ in range(30):
             frames = self.pipeline.wait_for_frames()
             c = frames.get_color_frame()
@@ -32,6 +37,12 @@ class RealSenseCameraSystem:
         depth = aligned.get_depth_frame()
         if not color or not depth:
             return False, None, None
+
+        depth = self.spatial.process(depth) 
+        depth = self.temporal.process(depth)
+        depth = self.hole_filling.process(depth)
+        depth = depth.as_depth_frame()
+
         return True, np.asanyarray(color.get_data()), depth
 
     def release(self):

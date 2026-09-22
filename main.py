@@ -79,6 +79,7 @@ def main():
             # ---- Калман ----
             if world_point_valid:
                 world_smooth = kf_3d.get_state()
+                last_smooth_world = world_smooth.copy()
             else:
                 world_smooth = kf_3d.predict()
                 miss_counter += 1
@@ -141,15 +142,19 @@ def main():
             paused = not paused
             print("Пауза:", paused)
         elif key in (ord('o'), ord('O')):
-            if last_valid_world is not None:
-                origin_world = last_valid_world.copy()
+            if last_smooth_world is not None:
+                origin_world = last_smooth_world.copy()
                 trajectory.clear()
+                kf_3d.reset()                # ← добавил
+                miss_counter = 0             # ← добавил
                 print(f"Ноль установлен: {origin_world}")
             else:
                 print("Нет валидной точки.")
         elif key in (ord('b'), ord('B')):
             origin_world = None
             trajectory.clear()
+            kf_3d.reset()                # ← добавил
+            miss_counter = 0             # ← добавил
             print("Ноль сброшен.")
 
     cameras.release()

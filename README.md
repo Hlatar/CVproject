@@ -19,7 +19,7 @@ A real-time computer vision system that detects drones, tracks them across frame
 
 ---
 
-## ✨ Features
+##  Features
 
 - **Real-time drone detection** using a fine-tuned YOLO model
 - **Object tracking** with CSRT / KCF (via `opencv-contrib`) to survive short detection losses
@@ -33,7 +33,7 @@ A real-time computer vision system that detects drones, tracks them across frame
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 
@@ -82,7 +82,7 @@ A real-time computer vision system that detects drones, tracks them across frame
 
 ---
 
-## 🎮 Controls
+##  Controls
 
 | Key | Action |
 |-----|--------|
@@ -96,7 +96,7 @@ A real-time computer vision system that detects drones, tracks them across frame
 
 ---
 
-## 🧠 How It Works
+##  How It Works
 
 ```
 ┌──────────────┐    ┌──────────┐    ┌───────────┐    ┌──────────┐
@@ -121,7 +121,7 @@ A real-time computer vision system that detects drones, tracks them across frame
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 CVproject/
@@ -142,7 +142,7 @@ CVproject/
 
 ---
 
-## ⚙️ Configuration
+##  Configuration
 
 Edit `config.py`:
 
@@ -163,7 +163,7 @@ TRAJECTORY_PLOT_FILE = "trajectory_3d.png"
 
 ---
 
-## 🤖 Model
+##  Model
 
 The detector uses a fine-tuned YOLO model trained specifically for drone detection.
 
@@ -180,13 +180,13 @@ The detector uses a fine-tuned YOLO model trained specifically for drone detecti
 | Recall | 0.929 |
 
 Weights are hosted on Hugging Face:
-👉 [`Hlatar/Geoscan_pioneer_base_drone_detection_finetuned`](https://huggingface.co/Hlatar/Geoscan_pioneer_base_drone_detection_finetuned)
+ [`Hlatar/Geoscan_pioneer_base_drone_detection_finetuned`](https://huggingface.co/Hlatar/Geoscan_pioneer_base_drone_detection_finetuned)
 
 Download the weights manually and place `best.pt` in the project root.
 
 ---
 
-## 📊 Output
+##  Output
 
 The saved 3D trajectory plot (`trajectory_3d.png`) includes:
 
@@ -202,7 +202,7 @@ Live dashboard shows:
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **Python** — core language
 - **OpenCV (contrib)** — video capture, tracking, Kalman filter, drawing
@@ -214,7 +214,7 @@ Live dashboard shows:
 
 ---
 
-## ⚠️ Limitations
+##  Limitations
 
 - Trained only on the `drone` class.
 - Depth accuracy depends on the scene — reflective or transparent surfaces degrade Z.
@@ -223,24 +223,21 @@ Live dashboard shows:
 
 ---
 
-## 🗺️ Roadmap
+##  Roadmap
 
 - [ ] Multi-object tracking with IDs
-- [ ] Real-time 3D viewer (Open3D / pyvista)
-- [ ] Export trajectory to CSV
-- [ ] Docker image for reproducible setup
 
 ---
 
-## 📄 License
+##  License
 
 This project is distributed under the **MIT License** — see `LICENSE` for details.
 
-> ⚠️ The base YOLO11 model from Ultralytics is licensed under **AGPL-3.0**. If you plan to use this project commercially, review Ultralytics' licensing terms.
+>  The base YOLO11 model from Ultralytics is licensed under **AGPL-3.0**. If you plan to use this project commercially, review Ultralytics' licensing terms.
 
 ---
 
-## 📬 Contact
+##  Contact
 
 **Hlatar** — [@Hlatar](https://github.com/Hlatar)
 

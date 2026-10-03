@@ -1,8 +1,10 @@
 import cv2
-import numpy as np
+from config import (
+    REALSENSE_FPS
+)
 
 class KalmanFilter3D:
-    def __init__(self, dt=1.0, process_noise=0.1, measurement_noise=0.5):
+    def __init__(self, dt= 1.0/REALSENSE_FPS , process_noise=0.1, measurement_noise=0.5):
         self.dt = dt
         self.kf = cv2.KalmanFilter(6, 3)  # состояние: x,y,z,vx,vy,vz
         self.kf.measurementMatrix = np.array([[1,0,0,0,0,0],

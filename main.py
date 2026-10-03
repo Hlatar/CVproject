@@ -46,6 +46,7 @@ def main():
     fps_smooth = 0.0
     origin_world = None
     last_valid_world = None
+    last_smooth_world = None
 
     print("=== Drone Tracking with RealSense D435i (Color + Depth) ===")
     print("Управление: R - запись, S - сохранить график, C - очистить, P - пауза, ESC - выход, O - установить ноль, B - сбросить ноль")
@@ -142,8 +143,8 @@ def main():
             paused = not paused
             print("Пауза:", paused)
         elif key in (ord('o'), ord('O')):
-            if last_smooth_world is not None:
-                origin_world = last_smooth_world.copy()
+            if last_valid_world is not None:
+                origin_world = last_valid_world.copy()
                 trajectory.clear()
                 kf_3d.reset()                # ← добавил
                 miss_counter = 0             # ← добавил

@@ -13,10 +13,13 @@ env/
 *.pt
 *.pth
 best.pt
+*.onnx
+*.engine
 
 # Calibrate and result
 *.npz
 trajectory_3d.png
+*.png
 
 # IDE
 .vscode/
@@ -33,6 +36,7 @@ Thumbs.db
 # Virtual environments (extra)
 yolo_env/
 Окружение/
+Окружение
 
 # Local experiments / datasets
 archive/
@@ -40,3 +44,5 @@ dron/
 
 # YOLO training outputs
 runs/
+
+

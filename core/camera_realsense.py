@@ -1,13 +1,26 @@
 import pyrealsense2 as rs
 import numpy as np
+from config import REALSENSE_EXPOSURE, USE_AUTO_EXPOSURE
 
 class RealSenseCameraSystem:
-    def __init__(self, width=1280, height=720, fps=30):
+    def __init__(self, width=640, height=480, fps=60):
         self.pipeline = rs.pipeline()
         config = rs.config()
         config.enable_stream(rs.stream.color, width, height, rs.format.bgr8, fps)
         config.enable_stream(rs.stream.depth, width, height, rs.format.z16, fps)
-        self.pipeline.start(config)
+        profile = self.pipeline.start(config)
+
+        # Настройка экспозиции
+        try:
+            color_sensor = profile.get_device().query_sensors()[1]
+            if USE_AUTO_EXPOSURE:
+                color_sensor.set_option(rs.option.enable_auto_exposure, True)
+            else:
+                color_sensor.set_option(rs.option.enable_auto_exposure, False)
+                color_sensor.set_option(rs.option.exposure, REALSENSE_EXPOSURE)
+        except Exception as e:
+            print(f"Предупреждение по настройке экспозиции: {e}")
+
         self.align = rs.align(rs.stream.color)
         self.color_intrinsics = None
 
@@ -22,7 +35,7 @@ class RealSenseCameraSystem:
                 self.color_intrinsics = c.get_profile().as_video_stream_profile().get_intrinsics()
                 break
         if self.color_intrinsics is None:
-            raise RuntimeError("No color intrinsics")
+            raise RuntimeError("Не удалось получить интринсики камеры")
 
     def get_color_intrinsics(self):
         K = np.array([[self.color_intrinsics.fx, 0, self.color_intrinsics.ppx],
@@ -38,7 +51,7 @@ class RealSenseCameraSystem:
         if not color or not depth:
             return False, None, None
 
-        depth = self.spatial.process(depth) 
+        depth = self.spatial.process(depth)
         depth = self.temporal.process(depth)
         depth = self.hole_filling.process(depth)
         depth = depth.as_depth_frame()

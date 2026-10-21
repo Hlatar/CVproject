@@ -1,13 +1,18 @@
-TRAJECTORY_PLOT_FILE = "trajectory_3d.png" # the image of terajectory
+BALL_TRAJECTORY_PLOT_FILE = "trajectory_ball.png"
+DRONE_TRAJECTORY_PLOT_FILE = "trajectory_drone.png"
 
-YOLO_MODEL = "best.pt"                     # model name
-YOLO_CONF = 0.25                           # confidence threshold (for drone recommended 0.25-0.3)
+# Модель и пороги
+YOLO_MODEL = "best_with_ball.pt"
+YOLO_CONF = 0.25
 
-# model contains only one class: "drone" (index 0)
-TARGET_CLASS_NAME = "drone"       # name of clas detection
+# Отслеживаемые классы
+TARGET_CLASSES = ["drone", "ball"]
 
-# === REALSENSE settings ===
-REALSENSE_USE_COLOR = True          # using color stream for YOLO (if True) or IR (or False)
-REALSENSE_WIDTH = 1280
-REALSENSE_HEIGHT = 720
-REALSENSE_FPS = 30 
+# === Настройки RealSense ===
+REALSENSE_USE_COLOR = True
+REALSENSE_WIDTH = 640       # 640x480 — разрешение для 60 FPS на RGB-камере
+REALSENSE_HEIGHT = 480
+REALSENSE_FPS = 60
+
+USE_AUTO_EXPOSURE = True    # Включена автоэкспозиция
+REALSENSE_EXPOSURE = 150

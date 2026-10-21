@@ -1,266 +1,108 @@
 import cv2 as cv
 import numpy as np
 
-
-# ============================================================
-# Basic camera / detection visualization
-# ============================================================
-
+CLASS_COLORS = {
+    'drone': (0, 255, 0),    # Зеленый
+    'ball': (0, 165, 255)    # Оранжевый
+}
 
 def draw_detection_overlay(img, det, camera_label="Cam"):
-    """
-    Рисует bbox, центр объекта и confidence.
-    """
-
     if det is None:
-        cv.putText(
-            img,
-            f"{camera_label}: object not found",
-            (10, 40),
-            cv.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (0, 0, 255),
-            2,
-            cv.LINE_AA,
-        )
         return
 
     x1, y1, x2, y2 = det["bbox"]
     cx, cy = det["center"]
     conf = det["conf"]
-    class_name = det["class_name"]
+    class_name = det.get("class_name", "object")
 
-    cv.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+    color = CLASS_COLORS.get(class_name, (255, 255, 255))
 
-    cv.circle(
-        img,
-        (int(round(cx)), int(round(cy))),
-        5,
-        (0, 0, 255),
-        -1,
-    )
+    cv.rectangle(img, (x1, y1), (x2, y2), color, 2)
+    cv.circle(img, (int(round(cx)), int(round(cy))), 5, (0, 0, 255), -1)
 
-    if conf is not None:
-        conf_text = f"{conf:.2f}"
-    else:
-        conf_text = "track"  # или "N/A"
+    conf_text = f"{conf:.2f}" if conf is not None else "track"
+    label_str = f"{class_name.upper()} {conf_text}"
 
     cv.putText(
         img,
-        f"{camera_label}: {class_name} {conf_text}",
+        label_str,
         (x1, max(20, y1 - 10)),
         cv.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (0, 255, 0),
-        2,
-        cv.LINE_AA,
-    )
-
-
-def draw_3d_text(img, X):
-    """
-    Рисует текущую 3D-координату объекта на изображении.
-    """
-
-    if X is None:
-        cv.putText(
-            img,
-            "3D: N/A",
-            (10, 80),
-            cv.FONT_HERSHEY_SIMPLEX,
-            0.7,
-            (0, 0, 255),
-            2,
-            cv.LINE_AA,
-        )
-        return
-
-    cv.putText(
-        img,
-        f"3D: X={X[0]:+.3f}  Y={X[1]:+.3f}  Z={X[2]:+.3f}",
-        (10, 80),
-        cv.FONT_HERSHEY_SIMPLEX,
         0.6,
-        (0, 255, 255),
+        color,
         2,
-        cv.LINE_AA,
+        cv.LINE_AA
     )
 
-
-# ============================================================
-# Single-drone dashboard
-# ============================================================
-
-def resize_to_height_local(img, target_h):
+def draw_dual_trajectory_panel(ball_points, drone_points, rec_ball=False, rec_drone=False, width=500, height=480, scale=80):
     """
-    Меняет размер изображения по высоте с сохранением пропорций.
+    Рисует правую панель с совмещенными проекциями траекторий МЯЧА (Оранжевый) и ДРОНА (Зеленый).
     """
-
-    h, w = img.shape[:2]
-    scale = target_h / h
-    target_w = int(w * scale)
-
-    return cv.resize(img, (target_w, target_h))
-
-
-def draw_info_line(panel, y, label, value, label_x=25, value_x=230):
-    """
-    Строка параметра в нижней панели.
-    """
-
-    label_color = (70, 110, 70)
-    value_color = (60, 130, 60)
-
-    cv.putText(
-        panel,
-        label,
-        (label_x, y),
-        cv.FONT_HERSHEY_SIMPLEX,
-        0.5,
-        label_color,
-        1,
-        cv.LINE_AA,
-    )
-
-    cv.putText(
-        panel,
-        value,
-        (value_x, y),
-        cv.FONT_HERSHEY_SIMPLEX,
-        0.55,
-        value_color,
-        1,
-        cv.LINE_AA,
-    )
-
-
-# ============================================================
-# Optional trajectory projections panel
-# Можно оставить для отладки, если потом захочешь вернуть.
-# ============================================================
-
-def draw_trajectory_panel(points, width=500, height=720, scale=80):
-    """
-    Рисует панель траектории в трёх проекциях:
-
-        XZ — вид сверху
-        XY — вид спереди
-        ZY — вид сбоку
-    """
-
     panel = np.zeros((height, width, 3), dtype=np.uint8)
 
-    cv.putText(
-        panel,
-        "3D trajectory projections",
-        (20, 30),
-        cv.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (255, 255, 255),
-        2,
-        cv.LINE_AA,
-    )
+    # Статус записи на правой панели
+    ball_rec_str = "REC ON" if rec_ball else "REC OFF"
+    ball_rec_col = (0, 165, 255) if rec_ball else (120, 120, 120)
+    drone_rec_str = "REC ON" if rec_drone else "REC OFF"
+    drone_rec_col = (0, 255, 0) if rec_drone else (120, 120, 120)
 
-    if points is None or len(points) < 2:
-        cv.putText(
-            panel,
-            "Not enough points",
-            (20, 70),
-            cv.FONT_HERSHEY_SIMPLEX,
-            0.6,
-            (0, 0, 255),
-            2,
-            cv.LINE_AA,
-        )
-        return panel
+    cv.putText(panel, f"BALL: {ball_rec_str}", (20, 25), cv.FONT_HERSHEY_SIMPLEX, 0.55, ball_rec_col, 2, cv.LINE_AA)
+    cv.putText(panel, f"DRONE: {drone_rec_str}", (260, 25), cv.FONT_HERSHEY_SIMPLEX, 0.55, drone_rec_col, 2, cv.LINE_AA)
 
-    pts = np.asarray(points, dtype=np.float32)
+    ball_pts = np.asarray(ball_points, dtype=np.float32) if ball_points is not None and len(ball_points) > 0 else None
+    drone_pts = np.asarray(drone_points, dtype=np.float32) if drone_points is not None and len(drone_points) > 0 else None
 
     centers = [
-        (width // 2, 170),
-        (width // 2, 390),
-        (width // 2, 610),
+        (width // 2, 110),
+        (width // 2, 240),
+        (width // 2, 370),
     ]
 
-    titles = [
-        "Top view: X-Z",
-        "Front view: X-Y",
-        "Side view: Z-Y",
-    ]
-
-    projections = [
-        (0, 2),
-        (0, 1),
-        (2, 1),
-    ]
+    titles = ["Top view: X-Z", "Front view: X-Y", "Side view: Z-Y"]
+    projections = [(0, 2), (0, 1), (2, 1)]
 
     for (cx, cy), title, (a, b) in zip(centers, titles, projections):
-        cv.putText(
-            panel,
-            title,
-            (20, cy - 90),
-            cv.FONT_HERSHEY_SIMPLEX,
-            0.6,
-            (255, 255, 255),
-            1,
-            cv.LINE_AA,
-        )
+        cv.putText(panel, title, (20, cy - 45), cv.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1, cv.LINE_AA)
+        cv.line(panel, (cx - 180, cy), (cx + 180, cy), (50, 50, 50), 1)
+        cv.line(panel, (cx, cy - 35), (cx, cy + 35), (50, 50, 50), 1)
 
-        cv.line(panel, (cx - 180, cy), (cx + 180, cy), (80, 80, 80), 1)
-        cv.line(panel, (cx, cy - 80), (cx, cy + 80), (80, 80, 80), 1)
+        # Отрисовка траектории МЯЧА (Оранжевый)
+        if ball_pts is not None and len(ball_pts) >= 2:
+            prev = None
+            for p in ball_pts:
+                u = int(cx + p[a] * scale)
+                v = int(cy - p[b] * scale)
+                if 0 <= u < width and 0 <= v < height:
+                    if prev is not None:
+                        cv.line(panel, prev, (u, v), (0, 165, 255), 2)
+                    prev = (u, v)
+            last = ball_pts[-1]
+            u_l = int(cx + last[a] * scale)
+            v_l = int(cy - last[b] * scale)
+            if 0 <= u_l < width and 0 <= v_l < height:
+                cv.circle(panel, (u_l, v_l), 4, (0, 0, 255), -1)
 
-        prev = None
+        # Отрисовка траектории ДРОНА (Зеленый)
+        if drone_pts is not None and len(drone_pts) >= 2:
+            prev = None
+            for p in drone_pts:
+                u = int(cx + p[a] * scale)
+                v = int(cy - p[b] * scale)
+                if 0 <= u < width and 0 <= v < height:
+                    if prev is not None:
+                        cv.line(panel, prev, (u, v), (0, 255, 0), 2)
+                    prev = (u, v)
+            last = drone_pts[-1]
+            u_l = int(cx + last[a] * scale)
+            v_l = int(cy - last[b] * scale)
+            if 0 <= u_l < width and 0 <= v_l < height:
+                cv.circle(panel, (u_l, v_l), 4, (255, 0, 0), -1)
 
-        for p in pts:
-            u = int(cx + p[a] * scale)
-            v = int(cy - p[b] * scale)
+    # Статистика снизу
+    n_ball = len(ball_pts) if ball_pts is not None else 0
+    n_drone = len(drone_pts) if drone_pts is not None else 0
 
-            if 0 <= u < width and 0 <= v < height:
-                if prev is not None:
-                    cv.line(panel, prev, (u, v), (0, 255, 255), 2)
-
-                prev = (u, v)
-
-        last = pts[-1]
-        u = int(cx + last[a] * scale)
-        v = int(cy - last[b] * scale)
-
-        if 0 <= u < width and 0 <= v < height:
-            cv.circle(panel, (u, v), 5, (0, 0, 255), -1)
-
-    last = pts[-1]
-
-    cv.putText(
-        panel,
-        f"X={last[0]:.2f} m",
-        (20, height - 70),
-        cv.FONT_HERSHEY_SIMPLEX,
-        0.6,
-        (255, 255, 255),
-        1,
-        cv.LINE_AA,
-    )
-
-    cv.putText(
-        panel,
-        f"Y={last[1]:.2f} m",
-        (20, height - 45),
-        cv.FONT_HERSHEY_SIMPLEX,
-        0.6,
-        (255, 255, 255),
-        1,
-        cv.LINE_AA,
-    )
-
-    cv.putText(
-        panel,
-        f"Z={last[2]:.2f} m",
-        (20, height - 20),
-        cv.FONT_HERSHEY_SIMPLEX,
-        0.6,
-        (255, 255, 255),
-        1,
-        cv.LINE_AA,
-    )
+    cv.putText(panel, f"Ball points: {n_ball}", (20, height - 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 165, 255), 1, cv.LINE_AA)
+    cv.putText(panel, f"Drone points: {n_drone}", (260, height - 30), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv.LINE_AA)
 
     return panel
